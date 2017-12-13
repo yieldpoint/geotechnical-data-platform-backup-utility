@@ -22,6 +22,8 @@ with open('backup_status.csv') as file:
     for row in csv.reader(file):
         backup_status[row[0]] = row[1]
 
+backup_status_new = []
+
 instruments = json.loads(requests.get('%s/instruments' % base_url, auth=auth).text)
 for instrument in instruments['data']:
     instrument_id = instrument['id']
@@ -37,3 +39,9 @@ for instrument in instruments['data']:
 
     if INCREMENTIVE:
         last_timestamp = list(csv.reader(StringIO(data)))[-1][0]
+        backup_status_new.append((instrument_id, last_timestamp))
+
+with open('backup_status.csv', 'wb') as file:
+    writer = csv.writer(file, quoting=csv.QUOTE_MINIMAL)
+    for instrument in backup_status_new:
+        writer.writerow(instrument)
