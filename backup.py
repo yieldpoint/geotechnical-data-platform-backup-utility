@@ -28,11 +28,12 @@ files_dir = '%s/%s' % (GDP_BACKUP_DIR, datetime.datetime.now().strftime('%m-%d-%
 if not os.path.exists(files_dir):
     os.makedirs(files_dir)
 
-backup_status = dict()
-with open(GDP_BACKUP_STATUS_FILE) as file:
-    for row in csv.reader(file):
-        if row:
-            backup_status[row[0]] = row[1]
+if GDP_BACKUP_IS_INCREMENTIVE:
+    backup_status = dict()
+    with open(GDP_BACKUP_STATUS_FILE) as file:
+        for row in csv.reader(file):
+            if row:
+                backup_status[row[0]] = row[1]
 
 backup_status_new = []
 
@@ -57,7 +58,8 @@ for instrument in instruments['data']:
         backup_status_new.append((instrument_id, last_timestamp))
 
 
-with open(GDP_BACKUP_STATUS_FILE, 'wb') as file:
-    writer = csv.writer(file, quoting=csv.QUOTE_MINIMAL)
-    for instrument in backup_status_new:
-        writer.writerow(instrument)
+if GDP_BACKUP_IS_INCREMENTIVE:
+    with open(GDP_BACKUP_STATUS_FILE, 'wb') as file:
+        writer = csv.writer(file, quoting=csv.QUOTE_MINIMAL)
+        for instrument in backup_status_new:
+            writer.writerow(instrument)

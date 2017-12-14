@@ -6,4 +6,4 @@ GDP_BACKUP_USER = 'yieldpoint'
 GDP_BACKUP_PASSWORD = 'YPfuture'
 
 GDP_BACKUP_DIR = '/home/nargiza/Downloads/backups'
-GDP_BACKUP_STATUS_FILE == '/home/nargiza/Downloads/backups/backup_status.csv'
+GDP_BACKUP_STATUS_FILE = '/home/nargiza/Downloads/backups/backup_status.csv'
