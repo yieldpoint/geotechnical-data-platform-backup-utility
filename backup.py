@@ -21,7 +21,8 @@ if not os.path.exists(files_dir):
 backup_status = dict()
 with open('backup_status.csv') as file:
     for row in csv.reader(file):
-        backup_status[row[0]] = row[1]
+        if row:
+            backup_status[row[0]] = row[1]
 
 backup_status_new = []
 
@@ -34,12 +35,16 @@ for instrument in instruments['data']:
             start_timestamp = backup_status[instrument_id]
             data_url = base_data_url.format(base_url, instrument_id, FORMAT, start_timestamp)
     data = requests.get(data_url, auth=auth).text
+    if not data:
+        backup_status_new.append((instrument_id, start_timestamp))
+        continue
     with open('%s/%s.csv' % (files_dir, instrument_id), 'w') as file:
         file.write(data)
 
     if INCREMENTIVE:
         last_timestamp = list(csv.reader(StringIO(data)))[-1][0]
         backup_status_new.append((instrument_id, last_timestamp))
+
 
 with open('backup_status.csv', 'wb') as file:
     writer = csv.writer(file, quoting=csv.QUOTE_MINIMAL)
