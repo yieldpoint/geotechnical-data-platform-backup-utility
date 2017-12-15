@@ -5,6 +5,7 @@ import datetime
 import json
 import logging
 import os
+import os.path
 import requests
 from requests.auth import HTTPBasicAuth
 from StringIO import StringIO
@@ -34,7 +35,7 @@ if not os.path.exists(files_dir):
 
 if GDP_BACKUP_IS_INCREMENTIVE:
     backup_status = dict()
-    with open(GDP_BACKUP_STATUS_FILE) as file:
+    with open(GDP_BACKUP_STATUS_FILE, 'w') as file:
         for row in csv.reader(file):
             if row:
                 backup_status[row[0]] = row[1]
