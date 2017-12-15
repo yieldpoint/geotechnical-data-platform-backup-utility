@@ -34,6 +34,10 @@ if not os.path.exists(files_dir):
     logging.debug("Backup folder created: %s" % files_dir)
 
 if GDP_BACKUP_IS_INCREMENTIVE:
+
+    if not os.path.exists(GDP_BACKUP_STATUS_FILE):
+        open(GDP_BACKUP_STATUS_FILE, 'w')
+
     backup_status = dict()
     with open(GDP_BACKUP_STATUS_FILE, 'r+') as file:
         for row in csv.reader(file):
