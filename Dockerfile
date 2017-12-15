@@ -18,7 +18,6 @@ ENV GDP_BACKUP_STATUS_FILE /var/lib/gdp/backups/backup_status.csv
 
 RUN pip install requests
 
-ADD crontab /etc/cron.d/gdp-backup-cron
-RUN chmod 0644 /etc/cron.d/gdp-backup-cron
+RUN echo '*   *   *   *   *   /usr/bin/python /opt/geotechnical-data-platform-backup-utility/backup.py' >> /etc/crontabs/root
 
 CMD ["crond", "-f"]
