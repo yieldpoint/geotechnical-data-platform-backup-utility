@@ -28,7 +28,7 @@ auth = HTTPBasicAuth(GDP_BACKUP_USER, GDP_BACKUP_PASSWORD)
 base_url = 'http://{}:8000'.format(GDP_BACKUP_HOST)
 base_data_url = ('{}/instruments/{}/displacement-values/?format={}&start_timestamp={}')
 
-files_dir = '%s/%s' % (GDP_BACKUP_DIR, datetime.datetime.now().strftime('%m-%d-%y %H:%M:%S'))
+files_dir = '%s/%s' % (GDP_BACKUP_DIR, datetime.datetime.now().strftime('%m%d%y%H%M%S'))
 if not os.path.exists(files_dir):
     os.makedirs(files_dir)
     logging.debug("Backup folder created: %s" % files_dir)
