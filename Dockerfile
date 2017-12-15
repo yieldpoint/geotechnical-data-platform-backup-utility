@@ -7,6 +7,8 @@ RUN git clone -b master https://c9f540eaec04f7b3750d402675f07b5c2fc2f267@github.
 
 RUN rm /opt/geotechnical-data-platform-backup-utility/settings.py
 
+RUN mkdir /var/log/gdp
+
 ENV GDP_BACKUP_FORMAT csv2
 ENV GDP_BACKUP_IS_INCREMENTIVE true
 ENV GDP_BACKUP_HOST 192.168.2.83

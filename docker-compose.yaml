@@ -2,8 +2,8 @@ version: '3'
 
 services:
     gdp_backup:
-        build: .
-        # image: yieldpoint/gdp_backup
+        # build: .
+        image: yieldpoint/gdp_backup
         container_name: gdp_backup
         environment:
             GDP_BACKUP_FORMAT: csv2
