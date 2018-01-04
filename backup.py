@@ -23,11 +23,16 @@ except ImportError:
 
 
 logging.basicConfig(filename='/var/log/gdp/backup.log', level=logging.DEBUG)
+# turn off unnecessary logs
+logging.getLogger('requests').setLevel(logging.WARNING)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
 
 auth = HTTPBasicAuth(GDP_BACKUP_USER, GDP_BACKUP_PASSWORD)
 base_url = 'http://{}:8000'.format(GDP_BACKUP_HOST)
 base_data_url = ('{}/instruments/{}/displacement-values/?format={}&start_timestamp={}')
 
+
+logging.info('--------------------------------------------------------------')
 files_dir = '%s/%s' % (GDP_BACKUP_DIR, datetime.datetime.now().strftime('%m%d%y%H%M%S'))
 if not os.path.exists(files_dir):
     os.makedirs(files_dir)
@@ -35,6 +40,7 @@ if not os.path.exists(files_dir):
 
 if GDP_BACKUP_IS_INCREMENTIVE:
 
+    # create file if it doesn't exist
     if not os.path.exists(GDP_BACKUP_STATUS_FILE):
         open(GDP_BACKUP_STATUS_FILE, 'w')
 
@@ -50,6 +56,7 @@ backup_status_new = []
 instruments = json.loads(requests.get('{}/instruments'.format(base_url), auth=auth).text)
 for instrument in instruments['data']:
     instrument_id = instrument['id']
+    start_timestamp = ''
     data_url = base_data_url.format(base_url, instrument_id, GDP_BACKUP_FORMAT, '')
     if GDP_BACKUP_IS_INCREMENTIVE:
         if instrument_id in backup_status:
@@ -58,17 +65,34 @@ for instrument in instruments['data']:
                                             GDP_BACKUP_FORMAT, start_timestamp)
     logging.debug("Data url: %s" % data_url)
     data = requests.get(data_url, auth=auth).text
+
     if not data:
         logging.debug("No data")
-        backup_status_new.append((instrument_id, start_timestamp))
+        if start_timestamp:
+            backup_status_new.append((instrument_id, start_timestamp))
         continue
-    with open('%s/%s.csv' % (files_dir, instrument_id), 'w') as file:
-        file.write(data)
+
+    # data string to data list to be able to manipulate data
+    data_list = list(csv.reader(StringIO(data)))
 
     if GDP_BACKUP_IS_INCREMENTIVE:
-        last_timestamp = list(csv.reader(StringIO(data)))[-1][0]
-        backup_status_new.append((instrument_id, last_timestamp))
+        # first timestamp might be a repetition of the last timestamp from previous run
+        # note: the first row is a header
+        first_timestamp = data_list[1][0]
+        if first_timestamp == start_timestamp:
+            # if there is only a header and one row of data with repetition
+            if len(data_list) == 2:
+                continue
+            data_list_new = data_list[0]
+            data_list_new += data_list[2:]
+            data_list = data_list_new
 
+        # write the last timestamp to know where to start next time
+        backup_status_new.append((instrument_id, data_list[-1][0]))
+
+    with open('%s/%s.csv' % (files_dir, instrument_id), 'w') as file:
+        writer = csv.writer(file)
+        writer.writerows(data_list)
 
 if GDP_BACKUP_IS_INCREMENTIVE:
     with open(GDP_BACKUP_STATUS_FILE, 'wb') as file:
