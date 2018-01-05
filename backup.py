@@ -89,8 +89,9 @@ for instrument in instruments['data']:
             # if there is only a header and one row of data with repetition
             if len(data_list) == 2:
                 continue
-            data_list_new = data_list[0]
-            data_list_new += data_list[2:]
+            data_list_new = []
+            data_list_new.append(data_list[0])
+            data_list_new.extend(data_list[2:])
             data_list = data_list_new
 
         # write the last timestamp to know where to start next time
