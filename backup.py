@@ -44,6 +44,7 @@ if GDP_BACKUP_IS_INCREMENTIVE:
     if not os.path.exists(GDP_BACKUP_STATUS_FILE):
         open(GDP_BACKUP_STATUS_FILE, 'w')
 
+    # read backup status file
     backup_status = dict()
     with open(GDP_BACKUP_STATUS_FILE, 'r+') as file:
         for row in csv.reader(file):
@@ -51,16 +52,19 @@ if GDP_BACKUP_IS_INCREMENTIVE:
                 backup_status[row[0]] = row[1]
         logging.debug("Old backup_status: %s" % backup_status)
 
+# dict for a new backup status file after this run
 backup_status_new = dict()
 
 instruments = json.loads(requests.get('{}/instruments'.format(base_url), auth=auth).text)
 for instrument in instruments['data']:
     instrument_id = instrument['id']
     start_timestamp = ''
+    # url without start_timestamp so it backs up ALL data
     data_url = base_data_url.format(base_url, instrument_id, GDP_BACKUP_FORMAT, '')
     if GDP_BACKUP_IS_INCREMENTIVE:
         if instrument_id in backup_status:
             start_timestamp = backup_status[instrument_id]
+            # url for incrementive backup with start_timestamp specified, it rewrites prev url
             data_url = base_data_url.format(base_url, instrument_id,
                                             GDP_BACKUP_FORMAT, start_timestamp)
     logging.debug("Data url: %s" % data_url)
@@ -92,10 +96,12 @@ for instrument in instruments['data']:
         # write the last timestamp to know where to start next time
         backup_status_new[instrument_id] = data_list[-1][0]
 
+    # write data to csv file
     with open('%s/%s.csv' % (files_dir, instrument_id), 'w') as file:
         writer = csv.writer(file)
         writer.writerows(data_list)
 
+# capture updated backup status file
 if GDP_BACKUP_IS_INCREMENTIVE:
     with open(GDP_BACKUP_STATUS_FILE, 'wb') as file:
         writer = csv.writer(file, quoting=csv.QUOTE_MINIMAL)
