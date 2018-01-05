@@ -2,13 +2,13 @@ version: '3'
 
 services:
     gdp_backup:
-        build: .
-        # image: yieldpoint/gdp_backup
+        # build: .
+        image: yieldpoint/gdp_backup
         # container_name: gdp_backup
         environment:
             GDP_BACKUP_FORMAT: csv2
             GDP_BACKUP_IS_INCREMENTIVE: 1
-            GDP_BACKUP_HOST: 192.168.2.214
+            GDP_BACKUP_HOST: gdp.yieldpoint.com
             GDP_BACKUP_USER: yieldpoint
             GDP_BACKUP_PASSWORD: YPfuture
             GDP_BACKUP_DIR: /var/lib/gdp/backups
