@@ -20,6 +20,8 @@ ENV GDP_BACKUP_STATUS_FILE /var/lib/gdp/backups/backup_status.csv
 
 RUN pip install requests
 
-RUN echo '*   *   *   *   *   /usr/bin/python /opt/geotechnical-data-platform-backup-utility/backup.py' >> /etc/crontabs/root
+ENV GDP_BACKUP_CRON_PERIOD '* * * * *'
 
-CMD ["crond", "-f"]
+ADD Docker/entrypoint.sh /opt/entrypoint.sh
+
+CMD /opt/entrypoint.sh
