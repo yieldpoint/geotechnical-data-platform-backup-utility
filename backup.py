@@ -51,7 +51,7 @@ if GDP_BACKUP_IS_INCREMENTIVE:
                 backup_status[row[0]] = row[1]
         logging.debug("Old backup_status: %s" % backup_status)
 
-backup_status_new = []
+backup_status_new = dict()
 
 instruments = json.loads(requests.get('{}/instruments'.format(base_url), auth=auth).text)
 for instrument in instruments['data']:
@@ -66,10 +66,12 @@ for instrument in instruments['data']:
     logging.debug("Data url: %s" % data_url)
     data = requests.get(data_url, auth=auth).text
 
+    # if last timestamp is different it'll get rewritten down below
+    if start_timestamp:
+        backup_status_new[instrument_id] = start_timestamp
+
     if not data:
         logging.debug("No data")
-        if start_timestamp:
-            backup_status_new.append((instrument_id, start_timestamp))
         continue
 
     # data string to data list to be able to manipulate data
@@ -88,7 +90,7 @@ for instrument in instruments['data']:
             data_list = data_list_new
 
         # write the last timestamp to know where to start next time
-        backup_status_new.append((instrument_id, data_list[-1][0]))
+        backup_status_new[instrument_id] = data_list[-1][0]
 
     with open('%s/%s.csv' % (files_dir, instrument_id), 'w') as file:
         writer = csv.writer(file)
@@ -97,6 +99,6 @@ for instrument in instruments['data']:
 if GDP_BACKUP_IS_INCREMENTIVE:
     with open(GDP_BACKUP_STATUS_FILE, 'wb') as file:
         writer = csv.writer(file, quoting=csv.QUOTE_MINIMAL)
-        for instrument in backup_status_new:
-            writer.writerow(instrument)
+        for instrument_id, timestamp in backup_status_new.iteritems():
+            writer.writerow((instrument_id, timestamp))
         logging.debug("New backup_status: %s" % backup_status_new)
