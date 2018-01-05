@@ -2,7 +2,6 @@ version: '3'
 
 services:
     gdp_backup:
-        # build: .
         image: yieldpoint/gdp_backup
         container_name: gdp_backup
         environment:
