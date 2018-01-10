@@ -69,64 +69,72 @@ auth = HTTPBasicAuth(GDP_BACKUP_USER, GDP_BACKUP_PASSWORD)
 base_url = 'http://{}:8000'.format(GDP_BACKUP_HOST)
 base_data_url = ('{}/instruments/{}/displacement-values/?format={}&start_timestamp={}')
 
-logging.info('--------------------------------------------------------------')
 
-files_dir = get_backup_folder()
-
-if GDP_BACKUP_IS_INCREMENTIVE:
-    backup_status = get_backup_status()
-
-# dict for a new backup status file after this run
-backup_status_new = dict()
-
-instruments = json.loads(requests.get('{}/instruments'.format(base_url), auth=auth).text)
-for instrument in instruments['data']:
-    instrument_id = instrument['id']
-    start_timestamp = ''
-    # url without start_timestamp so it backs up ALL data
-    data_url = base_data_url.format(base_url, instrument_id, GDP_BACKUP_FORMAT, '')
-    if GDP_BACKUP_IS_INCREMENTIVE:
-        if instrument_id in backup_status:
-            start_timestamp = backup_status[instrument_id]
-            # url for incrementive backup with start_timestamp specified, it rewrites prev url
-            data_url = base_data_url.format(base_url, instrument_id,
-                                            GDP_BACKUP_FORMAT, start_timestamp)
-    logging.debug("Data url: %s" % data_url)
-    data = requests.get(data_url, auth=auth).text
-
-    # if last timestamp is different it'll get rewritten down below
-    if start_timestamp:
-        backup_status_new[instrument_id] = start_timestamp
-
-    if not data:
-        logging.debug("No data")
-        continue
-
-    # data string to data list to be able to manipulate data
-    data_list = list(csv.reader(StringIO(data)))
+def main():
+    logging.info('--------------------------------------------------------------')
+    files_dir = get_backup_folder()
 
     if GDP_BACKUP_IS_INCREMENTIVE:
-        # first timestamp might be a repetition of the last timestamp from previous run
-        # note: the first row is a header
-        first_timestamp = data_list[1][0]
-        if first_timestamp == start_timestamp:
-            # if there is only a header and one row of data with repetition
-            if len(data_list) == 2:
-                continue
-            data_list_new = []
-            data_list_new.append(data_list[0])
-            data_list_new.extend(data_list[2:])
-            data_list = data_list_new
+        backup_status = get_backup_status()
 
-        # write the last timestamp to know where to start next time
-        backup_status_new[instrument_id] = data_list[-1][0]
+    # dict for a new backup status file after this run
+    backup_status_new = dict()
 
-    # write data to csv file
-    instr_filename = '%s_%s' % (instrument_id, datetime.datetime.now().strftime('%m%d%y%H%M%S'))
-    with open('%s/%s.csv' % (files_dir, instr_filename), 'w') as file:
-        writer = csv.writer(file)
-        writer.writerows(data_list)
+    instruments = json.loads(requests.get('{}/instruments'.format(base_url), auth=auth).text)
+    for instrument in instruments['data']:
+        instrument_id = instrument['id']
+        start_timestamp = ''
+        # url without start_timestamp so it backs up ALL data
+        data_url = base_data_url.format(base_url, instrument_id, GDP_BACKUP_FORMAT, '')
+        if GDP_BACKUP_IS_INCREMENTIVE:
+            if instrument_id in backup_status:
+                start_timestamp = backup_status[instrument_id]
+                # url for incrementive backup with start_timestamp specified, it rewrites prev url
+                data_url = base_data_url.format(base_url, instrument_id,
+                                                GDP_BACKUP_FORMAT, start_timestamp)
+        logging.debug("Data url: %s" % data_url)
+        data = requests.get(data_url, auth=auth).text
 
-# capture updated backup status file
-if GDP_BACKUP_IS_INCREMENTIVE:
-    write_backup_status(backup_status_new)
+        # if last timestamp is different it'll get rewritten down below
+        if start_timestamp:
+            backup_status_new[instrument_id] = start_timestamp
+
+        if not data:
+            logging.debug("No data")
+            continue
+
+        # data string to data list to be able to manipulate data
+        data_list = list(csv.reader(StringIO(data)))
+
+        if GDP_BACKUP_IS_INCREMENTIVE:
+            # first timestamp might be a repetition of the last timestamp from previous run
+            # note: the first row is a header
+            first_timestamp = data_list[1][0]
+            if first_timestamp == start_timestamp:
+                # if there is only a header and one row of data with repetition
+                if len(data_list) == 2:
+                    continue
+                data_list_new = []
+                data_list_new.append(data_list[0])
+                data_list_new.extend(data_list[2:])
+                data_list = data_list_new
+
+            # write the last timestamp to know where to start next time
+            backup_status_new[instrument_id] = data_list[-1][0]
+
+        # write data to csv file
+        instr_filename = '%s_%s' % (instrument_id, datetime.datetime.now().strftime('%m%d%y%H%M%S'))
+        with open('%s/%s.csv' % (files_dir, instr_filename), 'w') as file:
+            writer = csv.writer(file)
+            writer.writerows(data_list)
+
+    # capture updated backup status file
+    if GDP_BACKUP_IS_INCREMENTIVE:
+        write_backup_status(backup_status_new)
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except Exception as e:
+        logging.exception(str(e))
