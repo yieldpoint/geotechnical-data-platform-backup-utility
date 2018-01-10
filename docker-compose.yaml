@@ -5,13 +5,17 @@ services:
         image: yieldpoint/gdp_backup
         container_name: gdp_backup
         environment:
-            GDP_BACKUP_FORMAT: csv2
-            GDP_BACKUP_IS_INCREMENTIVE: 1
             GDP_BACKUP_HOST: gdp.yieldpoint.com
             GDP_BACKUP_USER: yieldpoint
             GDP_BACKUP_PASSWORD: YPfuture
-            GDP_BACKUP_DIR: /var/lib/gdp/backups
+
+            GDP_BACKUP_FORMAT: csv2
+            GDP_BACKUP_IS_INCREMENTIVE: 1
+            GDP_BACKUP_IS_NEW_FOLDER_PER_RUN: 0
+
+            GDP_BACKUP_DIR: /var/lib/gdp/backups/data
             GDP_BACKUP_STATUS_FILE: /var/lib/gdp/backups/backup_status.csv
+
             GDP_BACKUP_CRON_PERIOD: "30 2 * * *"
         volumes:
             - /home/nargiza/Downloads/backups:/var/lib/gdp/backups

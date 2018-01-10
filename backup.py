@@ -13,16 +13,22 @@ from StringIO import StringIO
 try:
     from settings import *
 except ImportError:
-    GDP_BACKUP_FORMAT = os.environ['GDP_BACKUP_FORMAT']
-    GDP_BACKUP_IS_INCREMENTIVE = os.environ['GDP_BACKUP_IS_INCREMENTIVE']
     GDP_BACKUP_HOST = os.environ['GDP_BACKUP_HOST']
     GDP_BACKUP_USER = os.environ['GDP_BACKUP_USER']
     GDP_BACKUP_PASSWORD = os.environ['GDP_BACKUP_PASSWORD']
+
+    GDP_BACKUP_FORMAT = os.environ['GDP_BACKUP_FORMAT']
+    GDP_BACKUP_IS_INCREMENTIVE = os.environ['GDP_BACKUP_IS_INCREMENTIVE']
+    GDP_BACKUP_IS_NEW_FOLDER_PER_RUN = os.environ['GDP_BACKUP_IS_NEW_FOLDER_PER_RUN']
+
     GDP_BACKUP_DIR = os.environ['GDP_BACKUP_DIR']
     GDP_BACKUP_STATUS_FILE = os.environ['GDP_BACKUP_STATUS_FILE']
 
 
-logging.basicConfig(filename='/var/log/gdp/backup.log', level=logging.DEBUG)
+
+logging.basicConfig(filename='/var/log/gdp/backup.log',
+                    level=logging.DEBUG,
+                    format='%(asctime)s %(message)s')
 # turn off unnecessary logs
 logging.getLogger('requests').setLevel(logging.WARNING)
 logging.getLogger('urllib3').setLevel(logging.WARNING)
