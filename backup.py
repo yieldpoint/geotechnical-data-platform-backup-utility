@@ -39,10 +39,13 @@ base_data_url = ('{}/instruments/{}/displacement-values/?format={}&start_timesta
 
 
 logging.info('--------------------------------------------------------------')
-files_dir = '%s/%s' % (GDP_BACKUP_DIR, datetime.datetime.now().strftime('%m%d%y%H%M%S'))
-if not os.path.exists(files_dir):
-    os.makedirs(files_dir)
-    logging.debug("Backup folder created: %s" % files_dir)
+
+files_dir = GDP_BACKUP_DIR
+if GDP_BACKUP_IS_NEW_FOLDER_PER_RUN:
+    files_dir = '%s/%s' % (GDP_BACKUP_DIR, datetime.datetime.now().strftime('%m%d%y%H%M%S'))
+    if not os.path.exists(files_dir):
+        os.makedirs(files_dir)
+        logging.debug("Backup folder created: %s" % files_dir)
 
 if GDP_BACKUP_IS_INCREMENTIVE:
 
@@ -104,7 +107,8 @@ for instrument in instruments['data']:
         backup_status_new[instrument_id] = data_list[-1][0]
 
     # write data to csv file
-    with open('%s/%s.csv' % (files_dir, instrument_id), 'w') as file:
+    instr_filename = '%s_%s' % (instrument_id, datetime.datetime.now().strftime('%m%d%y%H%M%S'))
+    with open('%s/%s.csv' % (files_dir, instr_filename), 'w') as file:
         writer = csv.writer(file)
         writer.writerows(data_list)
 
