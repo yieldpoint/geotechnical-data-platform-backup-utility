@@ -16,7 +16,7 @@ services:
             GDP_BACKUP_DIR: /var/lib/gdp/backups/data
             GDP_BACKUP_STATUS_FILE: /var/lib/gdp/backups/backup_status.csv
 
-            GDP_BACKUP_CRON_PERIOD: "30 2 * * *"
+            GDP_BACKUP_CRON_PERIOD: "* * * * *"
         volumes:
             - /home/nargiza/Downloads/backups:/var/lib/gdp/backups
             - /home/nargiza/Downloads/backups/logs:/var/log/gdp

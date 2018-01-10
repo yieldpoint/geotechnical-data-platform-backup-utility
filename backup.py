@@ -60,7 +60,7 @@ def write_backup_status(backup_status):
 
 logging.basicConfig(filename='/var/log/gdp/backup.log',
                     level=logging.DEBUG,
-                    format='%(asctime)s %(message)s')
+                    format='%(asctime)s %(levelname)s %(message)s')
 # turn off unnecessary logs
 logging.getLogger('requests').setLevel(logging.WARNING)
 logging.getLogger('urllib3').setLevel(logging.WARNING)
