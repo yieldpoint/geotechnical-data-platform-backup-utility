@@ -37,6 +37,27 @@ def get_backup_folder():
     return files_dir
 
 
+def get_backup_status():
+    if not os.path.exists(GDP_BACKUP_STATUS_FILE):
+        return {}
+
+    backup_status = dict()
+    with open(GDP_BACKUP_STATUS_FILE, 'r+') as file:
+        for row in csv.reader(file):
+            if row:
+                backup_status[row[0]] = row[1]
+        logging.debug("Old backup_status: %s" % backup_status)
+    return backup_status
+
+
+def write_backup_status(backup_status):
+    with open(GDP_BACKUP_STATUS_FILE, 'wb') as file:
+        writer = csv.writer(file, quoting=csv.QUOTE_MINIMAL)
+        for instrument_id, timestamp in backup_status.iteritems():
+            writer.writerow((instrument_id, timestamp))
+        logging.debug("New backup_status: %s" % backup_status)
+
+
 logging.basicConfig(filename='/var/log/gdp/backup.log',
                     level=logging.DEBUG,
                     format='%(asctime)s %(message)s')
@@ -53,18 +74,7 @@ logging.info('--------------------------------------------------------------')
 files_dir = get_backup_folder()
 
 if GDP_BACKUP_IS_INCREMENTIVE:
-
-    # create file if it doesn't exist
-    if not os.path.exists(GDP_BACKUP_STATUS_FILE):
-        open(GDP_BACKUP_STATUS_FILE, 'w')
-
-    # read backup status file
-    backup_status = dict()
-    with open(GDP_BACKUP_STATUS_FILE, 'r+') as file:
-        for row in csv.reader(file):
-            if row:
-                backup_status[row[0]] = row[1]
-        logging.debug("Old backup_status: %s" % backup_status)
+    backup_status = get_backup_status()
 
 # dict for a new backup status file after this run
 backup_status_new = dict()
@@ -119,8 +129,4 @@ for instrument in instruments['data']:
 
 # capture updated backup status file
 if GDP_BACKUP_IS_INCREMENTIVE:
-    with open(GDP_BACKUP_STATUS_FILE, 'wb') as file:
-        writer = csv.writer(file, quoting=csv.QUOTE_MINIMAL)
-        for instrument_id, timestamp in backup_status_new.iteritems():
-            writer.writerow((instrument_id, timestamp))
-        logging.debug("New backup_status: %s" % backup_status_new)
+    write_backup_status(backup_status_new)
