@@ -40,7 +40,7 @@ base_data_url = ('{}/instruments/{}/displacement-values/?format={}&start_timesta
 
 logging.info('--------------------------------------------------------------')
 
-logging.info('GDP_BACKUP_IS_NEW_FOLDER_PER_RUN')
+logging.info(GDP_BACKUP_IS_NEW_FOLDER_PER_RUN)
 files_dir = GDP_BACKUP_DIR
 if GDP_BACKUP_IS_NEW_FOLDER_PER_RUN:
     files_dir = '%s/%s' % (GDP_BACKUP_DIR, datetime.datetime.now().strftime('%m%d%y%H%M%S'))
