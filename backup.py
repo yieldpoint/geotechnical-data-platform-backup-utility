@@ -136,5 +136,5 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except Exception as e:
-        logging.exception(str(e))
+    except:
+        logging.exception('Exception')
