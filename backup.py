@@ -10,6 +10,8 @@ import requests
 from requests.auth import HTTPBasicAuth
 from StringIO import StringIO
 
+from utils import str_to_bool
+
 try:
     from settings import *
 except ImportError:
@@ -18,12 +20,21 @@ except ImportError:
     GDP_BACKUP_PASSWORD = os.environ['GDP_BACKUP_PASSWORD']
 
     GDP_BACKUP_FORMAT = os.environ['GDP_BACKUP_FORMAT']
-    GDP_BACKUP_IS_INCREMENTIVE = os.environ['GDP_BACKUP_IS_INCREMENTIVE']
-    GDP_BACKUP_IS_NEW_FOLDER_PER_RUN = os.environ['GDP_BACKUP_IS_NEW_FOLDER_PER_RUN']
+    GDP_BACKUP_IS_INCREMENTIVE = str_to_bool(os.environ['GDP_BACKUP_IS_INCREMENTIVE'])
+    GDP_BACKUP_IS_NEW_FOLDER_PER_RUN = str_to_bool(os.environ['GDP_BACKUP_IS_NEW_FOLDER_PER_RUN'])
 
     GDP_BACKUP_DIR = os.environ['GDP_BACKUP_DIR']
     GDP_BACKUP_STATUS_FILE = os.environ['GDP_BACKUP_STATUS_FILE']
 
+
+def get_backup_folder():
+    files_dir = GDP_BACKUP_DIR
+    if GDP_BACKUP_IS_NEW_FOLDER_PER_RUN:
+        files_dir = '%s/%s' % (GDP_BACKUP_DIR, datetime.datetime.now().strftime('%m%d%y%H%M%S'))
+        if not os.path.exists(files_dir):
+            os.makedirs(files_dir)
+            logging.debug("Backup folder created: %s" % files_dir)
+    return files_dir
 
 
 logging.basicConfig(filename='/var/log/gdp/backup.log',
@@ -37,16 +48,9 @@ auth = HTTPBasicAuth(GDP_BACKUP_USER, GDP_BACKUP_PASSWORD)
 base_url = 'http://{}:8000'.format(GDP_BACKUP_HOST)
 base_data_url = ('{}/instruments/{}/displacement-values/?format={}&start_timestamp={}')
 
-
 logging.info('--------------------------------------------------------------')
 
-logging.info(GDP_BACKUP_IS_NEW_FOLDER_PER_RUN)
-files_dir = GDP_BACKUP_DIR
-if GDP_BACKUP_IS_NEW_FOLDER_PER_RUN:
-    files_dir = '%s/%s' % (GDP_BACKUP_DIR, datetime.datetime.now().strftime('%m%d%y%H%M%S'))
-    if not os.path.exists(files_dir):
-        os.makedirs(files_dir)
-        logging.debug("Backup folder created: %s" % files_dir)
+files_dir = get_backup_folder()
 
 if GDP_BACKUP_IS_INCREMENTIVE:
 
