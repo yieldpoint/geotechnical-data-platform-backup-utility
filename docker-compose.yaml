@@ -5,7 +5,7 @@ services:
         image: yieldpoint/gdp_backup
         container_name: gdp_backup
         environment:
-            GDP_BACKUP_HOST: gdp.yieldpoint.com
+            GDP_BACKUP_HOST: 192.168.2.83
             GDP_BACKUP_USER: yieldpoint
             GDP_BACKUP_PASSWORD: YPfuture
 
