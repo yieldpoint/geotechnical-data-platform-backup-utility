@@ -3,7 +3,7 @@ FROM jfloff/alpine-python:2.7
 RUN apk update && apk upgrade &&  \
     apk add git
 
-RUN git clone -b master https://c9f540eaec04f7b3750d402675f07b5c2fc2f267@github.com/yieldpoint/geotechnical-data-platform-backup-utility.git /opt/geotechnical-data-platform-backup-utility/
+RUN git clone -b master https://github.com/yieldpoint/geotechnical-data-platform-backup-utility.git /opt/geotechnical-data-platform-backup-utility/
 
 RUN rm /opt/geotechnical-data-platform-backup-utility/settings.py
 
