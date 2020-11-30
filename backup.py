@@ -31,6 +31,7 @@ def get_backup_folder():
     files_dir = GDP_BACKUP_DIR
     if GDP_BACKUP_IS_NEW_FOLDER_PER_RUN:
         files_dir = '%s/%s' % (GDP_BACKUP_DIR, datetime.datetime.now().strftime('%m%d%y%H%M%S'))
+        #files_dir = '%s/%s' % (GDP_BACKUP_DIR, datetime.datetime.now().strftime('%y%m%d%H%M%S'))
         if not os.path.exists(files_dir):
             os.makedirs(files_dir)
             logging.debug("Backup folder created: %s" % files_dir)
@@ -54,9 +55,26 @@ def write_backup_status(backup_status):
     with open(GDP_BACKUP_STATUS_FILE, 'wb') as file:
         writer = csv.writer(file, quoting=csv.QUOTE_MINIMAL)
         for instrument_id, timestamp in backup_status.iteritems():
-            writer.writerow((instrument_id, timestamp))
+            writer.writerow((instrument_id, csv3(timestamp)))
         logging.debug("New backup_status: %s" % backup_status)
 
+
+def csv3(timestamp):
+    date = timestamp.split(" ")[0]
+    time = timestamp.split(" ")[1]
+
+    date_split = date.split("/")
+
+    year = date_split[0]
+    year = year[2:4]
+    month = date_split[1]
+    day = date_split[2]
+
+    date = month + "/" + day + "/" + year
+
+    timestamp = date + " " + time
+    return(timestamp)
+    
 
 logging.basicConfig(filename='/var/log/gdp/backup.log',
                     level=logging.DEBUG,
@@ -105,6 +123,8 @@ def main():
 
         # data string to data list to be able to manipulate data
         data_list = list(csv.reader(StringIO(data)))
+        logging.debug("data_list")
+        logging.debug(str(data_list))
 
         if GDP_BACKUP_IS_INCREMENTIVE:
             # first timestamp might be a repetition of the last timestamp from previous run
@@ -123,7 +143,8 @@ def main():
             backup_status_new[instrument_id] = data_list[-1][0]
 
         # write data to csv file
-        instr_filename = '%s_%s' % (instrument_id, datetime.datetime.now().strftime('%m%d%y%H%M%S'))
+        #instr_filename = '%s_%s' % (instrument_id, datetime.datetime.now().strftime('%m%d%y%H%M%S'))
+        instr_filename = '%s_%s' % (instrument_id, datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
         with open('%s/%s.csv' % (files_dir, instr_filename), 'w') as file:
             writer = csv.writer(file)
             writer.writerows(data_list)
